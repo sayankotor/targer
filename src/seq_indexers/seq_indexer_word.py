@@ -44,7 +44,7 @@ class SeqIndexerWord(SeqIndexerBaseEmbeddings):
             print('\nload_vocabulary_from_embeddings_file_and_unique_words_list:')
             print('    First 50 OOV words:')
             for i, oov_word in enumerate(out_of_vocabulary_words_list):
-                print('        out_of_vocabulary_words_list[%d] = %s' % (i, oov_word))
+                print('        out_of_vocabulary_words_list[%d] = %s' % (i, oov_word.encode('utf-8')))
                 if i > 49:
                     break
             print(' -- len(out_of_vocabulary_words_list) = %d' % len(out_of_vocabulary_words_list))

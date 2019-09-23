@@ -13,7 +13,7 @@ class SeqIndexerBaseEmbeddings(SeqIndexerBase):
                                 verbose)
     @staticmethod
     def load_embeddings_from_file(emb_fn, emb_delimiter, verbose=True):
-        for k, line in enumerate(open(emb_fn, 'r')):
+        for k, line in enumerate(open(emb_fn, 'r', encoding="utf-8")):
             values = line.split(emb_delimiter)
             if len(values) < 5:
                 continue

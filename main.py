@@ -85,12 +85,19 @@ if __name__ == "__main__":
     # Load text data as lists of lists of words (sequences) and corresponding list of lists of tags
     data_io = DataIOFactory.create(args)
     word_sequences_train, tag_sequences_train, word_sequences_dev, tag_sequences_dev, word_sequences_test, tag_sequences_test = data_io.read_train_dev_test(args)
+
+    print ("word_sequences_train", len(word_sequences_train))
+    print (word_sequences_train[:10])
+
     # DatasetsBank provides storing the different dataset subsets (train/dev/test) and sampling batches
     datasets_bank = DatasetsBankFactory.create(args)
     datasets_bank.add_train_sequences(word_sequences_train, tag_sequences_train)
     datasets_bank.add_dev_sequences(word_sequences_dev, tag_sequences_dev)
     datasets_bank.add_test_sequences(word_sequences_test, tag_sequences_test)
     # Word_seq_indexer converts lists of lists of words to lists of lists of integer indices and back
+
+    print ("qu")
+
     if args.word_seq_indexer is not None and isfile(args.word_seq_indexer):
         word_seq_indexer = torch.load(args.word_seq_indexer)
     else:
@@ -105,6 +112,9 @@ if __name__ == "__main__":
     # Tag_seq_indexer converts lists of lists of tags to lists of lists of integer indices and back
     tag_seq_indexer = SeqIndexerTag(gpu=args.gpu)
     tag_seq_indexer.load_items_from_tag_sequences(tag_sequences_train)
+
+    print ("qu1")
+
     # Create or load pre-trained tagger
     if args.load is None:
         tagger = TaggerFactory.create(args, word_seq_indexer, tag_seq_indexer, tag_sequences_train)
