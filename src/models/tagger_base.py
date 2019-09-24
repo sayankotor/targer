@@ -15,6 +15,7 @@ class TaggerBase(nn.Module):
         self.tag_seq_indexer = tag_seq_indexer
         self.gpu = gpu
         self.batch_size = batch_size
+        self.elmo = False
 
     def tensor_ensure_gpu(self, tensor):
         if self.gpu >= 0:

@@ -13,6 +13,7 @@ from src.factories.factory_optimizer import OptimizerFactory
 from src.factories.factory_tagger import TaggerFactory
 from src.seq_indexers.seq_indexer_tag import SeqIndexerTag
 from src.seq_indexers.seq_indexer_word import SeqIndexerWord
+from src.seq_indexers.seq_indexer_elmo import SeqIndexerElmo
 
 
 if __name__ == "__main__":
@@ -66,6 +67,9 @@ if __name__ == "__main__":
                         choices=['yes', True, 'no (default)', False], nargs='?',
                         help='False to continue training the char embeddings.')
     parser.add_argument('--word-len', type=int, default=20, help='Max length of words in characters for char CNNs.')
+    parser.add_argument('--elmo', default = False, help = 'is used elmo for word embedding')
+    parser.add_argument('--elmo_options_fn', default = "embeddings/elmo_2x4096_512_2048cnn_2xhighway_5.5B_options.json", help = 'json with pre-trained options') 
+    parser.add_argument('--elmo_weights_fn', default = "/home/vika/targer/embeddings/elmo_2x4096_512_2048cnn_2xhighway_5.5B_weights.hdf5", help = 'hdf5 with pre-trained weights') 
     parser.add_argument('--dataset-sort', type=str2bool, default=False, help='Sort sequences by length for training.',
                         nargs='?', choices=['yes', True, 'no (default)', False])
     parser.add_argument('--seed-num', type=int, default=42, help='Random seed number, note that 42 is the answer.')
@@ -86,8 +90,6 @@ if __name__ == "__main__":
     data_io = DataIOFactory.create(args)
     word_sequences_train, tag_sequences_train, word_sequences_dev, tag_sequences_dev, word_sequences_test, tag_sequences_test = data_io.read_train_dev_test(args)
 
-    print ("word_sequences_train", len(word_sequences_train))
-    print (word_sequences_train[:10])
 
     # DatasetsBank provides storing the different dataset subsets (train/dev/test) and sampling batches
     datasets_bank = DatasetsBankFactory.create(args)
@@ -96,11 +98,19 @@ if __name__ == "__main__":
     datasets_bank.add_test_sequences(word_sequences_test, tag_sequences_test)
     # Word_seq_indexer converts lists of lists of words to lists of lists of integer indices and back
 
-    print ("qu")
+    print ("qu", args.elmo)
 
-    if args.word_seq_indexer is not None and isfile(args.word_seq_indexer):
+    if args.word_seq_indexer is not None and isfile(args.word_seq_indexer) and args.elmo == False:
+        print ("1")
         word_seq_indexer = torch.load(args.word_seq_indexer)
+    elif args.elmo:
+        print ("2")
+        word_seq_indexer = SeqIndexerElmo(gpu=args.gpu, check_for_lowercase=args.check_for_lowercase,
+                                          options_file = args.elmo_options_fn, weights_file = args.elmo_weights_fn,
+                                          num_layers_ = 2, dropout_ = 0)
+        #continue
     else:
+        print ("3")
         word_seq_indexer = SeqIndexerWord(gpu=args.gpu, check_for_lowercase=args.check_for_lowercase,
                                           embeddings_dim=args.emb_dim, verbose=True)
         word_seq_indexer.load_items_from_embeddings_file_and_unique_words_list(emb_fn=args.emb_fn,
@@ -113,8 +123,9 @@ if __name__ == "__main__":
     tag_seq_indexer = SeqIndexerTag(gpu=args.gpu)
     tag_seq_indexer.load_items_from_tag_sequences(tag_sequences_train)
 
-    print ("qu1")
-
+    print ("word_sequences_train", len(word_sequences_train))
+    print (word_sequences_train[:10])
+    
     # Create or load pre-trained tagger
     if args.load is None:
         tagger = TaggerFactory.create(args, word_seq_indexer, tag_seq_indexer, tag_sequences_train)

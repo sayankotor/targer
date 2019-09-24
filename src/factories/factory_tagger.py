@@ -26,7 +26,7 @@ class TaggerFactory():
 
 
     @staticmethod
-    def create(args, word_seq_indexer, tag_seq_indexer, tag_sequences_train):
+    def create(args, word_seq_indexer, tag_seq_indexer, tag_sequences_train, isElmo = False):
         if args.model == 'BiRNN':
             tagger = TaggerBiRNN(word_seq_indexer=word_seq_indexer,
                                  tag_seq_indexer=tag_seq_indexer,

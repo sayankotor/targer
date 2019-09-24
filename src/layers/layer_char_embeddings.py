@@ -36,7 +36,7 @@ class LayerCharEmbeddings(LayerBase):
         input_tensor = self.tensor_ensure_gpu(torch.zeros(batch_num, max_seq_len, self.word_len, dtype=torch.long))
         for n, curr_char_seq in enumerate(char_sequences):
             curr_seq_len = len(curr_char_seq)
-            curr_char_seq_tensor = self.char_seq_indexer.get_char_tensor(curr_char_seq, self.word_len) # curr_seq_len x word_len
+            curr_char_seq_tensor = self.char_seq_indexer.get_char_tensor(curr_char_seq, self.word_len) # curr_seq_len x word_len         
             input_tensor[n, :curr_seq_len, :] = curr_char_seq_tensor
         char_embeddings_feature = self.embeddings(input_tensor)
         return char_embeddings_feature.permute(0, 1, 3, 2) # shape: batch_num x max_seq_len x char_embeddings_dim x word_len
