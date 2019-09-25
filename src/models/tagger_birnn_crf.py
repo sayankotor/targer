@@ -8,6 +8,7 @@ from src.layers.layer_bivanilla import LayerBiVanilla
 from src.layers.layer_bilstm import LayerBiLSTM
 from src.layers.layer_bigru import LayerBiGRU
 from src.layers.layer_crf import LayerCRF
+from src.layers.layer_context_word_embeddings import LayerContextWordEmbeddings
 
 
 class TaggerBiRNNCRF(TaggerBase):

@@ -18,13 +18,13 @@ class TaggerBase(nn.Module):
         self.elmo = False
 
     def tensor_ensure_gpu(self, tensor):
-        if self.gpu >= 0:
+        if self.gpu >= -1:
             return tensor.cuda(device=self.gpu)
         else:
             return tensor
 
     def self_ensure_gpu(self):
-        if self.gpu >= 0:
+        if self.gpu >= -1:
             self.cuda(device=self.gpu)
         else:
             self.cpu()

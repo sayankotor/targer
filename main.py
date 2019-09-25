@@ -67,7 +67,7 @@ if __name__ == "__main__":
                         choices=['yes', True, 'no (default)', False], nargs='?',
                         help='False to continue training the char embeddings.')
     parser.add_argument('--word-len', type=int, default=20, help='Max length of words in characters for char CNNs.')
-    parser.add_argument('--elmo', default = False, help = 'is used elmo for word embedding')
+    parser.add_argument('--elmo', type=str2bool, default = False, help = 'is used elmo for word embedding')
     parser.add_argument('--elmo_options_fn', default = "embeddings/elmo_2x4096_512_2048cnn_2xhighway_5.5B_options.json", help = 'json with pre-trained options') 
     parser.add_argument('--elmo_weights_fn', default = "/home/vika/targer/embeddings/elmo_2x4096_512_2048cnn_2xhighway_5.5B_weights.hdf5", help = 'hdf5 with pre-trained weights') 
     parser.add_argument('--dataset-sort', type=str2bool, default=False, help='Sort sequences by length for training.',
@@ -104,6 +104,8 @@ if __name__ == "__main__":
         print ("1")
         word_seq_indexer = torch.load(args.word_seq_indexer)
     elif args.elmo:
+        print (args.elmo)
+        print (args.elmo == False)
         print ("2")
         word_seq_indexer = SeqIndexerElmo(gpu=args.gpu, check_for_lowercase=args.check_for_lowercase,
                                           options_file = args.elmo_options_fn, weights_file = args.elmo_weights_fn,
