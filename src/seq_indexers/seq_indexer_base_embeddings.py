@@ -8,9 +8,9 @@ class SeqIndexerBaseEmbeddings(SeqIndexerBase):
     """
     SeqIndexerBaseEmbeddings is a basic abstract sequence indexers class that implements work qith embeddings.
     """
-    def __init__(self, gpu, check_for_lowercase, zero_digits, pad, unk, load_embeddings, embeddings_dim, verbose):
+    def __init__(self, gpu, check_for_lowercase, zero_digits, pad, unk, load_embeddings, embeddings_dim, verbose, isElmo = False, isBert = False):
         SeqIndexerBase.__init__(self, gpu, check_for_lowercase, zero_digits, pad, unk, load_embeddings, embeddings_dim,
-                                verbose)
+                                verbose, isElmo, isBert)
     @staticmethod
     def load_embeddings_from_file(emb_fn, emb_delimiter, verbose=True):
         for k, line in enumerate(open(emb_fn, 'r', encoding="utf-8")):

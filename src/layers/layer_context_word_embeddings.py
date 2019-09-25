@@ -29,7 +29,6 @@ class LayerContextWordEmbeddings(LayerBase):
 
     def forward(self, word_sequences):
         character_ids = self.to_gpu(self.word_seq_indexer.batch_to_ids(word_sequences))
-        print (character_ids.shape)
         word_embeddings_feature = self.embeddings(character_ids) # shape: batch_size x max_seq_len x output_dim
         word_embeddings_feature = word_embeddings_feature['elmo_representations'][1]
         self.weight = word_embeddings_feature

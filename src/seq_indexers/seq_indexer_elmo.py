@@ -10,9 +10,10 @@ class SeqIndexerElmo(SeqIndexerBaseEmbeddings):
     def __init__(self, gpu=-1, check_for_lowercase=True, embeddings_dim=0, verbose=True, options_file = '', weights_file = '', num_layers_ = 2, dropout_ = 0.1):
         SeqIndexerBaseEmbeddings.__init__(self, gpu=gpu, check_for_lowercase=check_for_lowercase, zero_digits=True,
                                           pad='<pad>', unk='<unk>', load_embeddings=True, embeddings_dim=embeddings_dim,
-                                          verbose=verbose)
+                                          verbose=verbose, isElmo = True)
         print ("create seq indexer elmo!")
-        self.no_context_base = False
+        #self.no_context_base = False
+        self.elmo = True
         self.options_fn = options_file
         self.weights_fn = weights_file
         self.emb = Elmo(options_file, weights_file, num_layers_, dropout=dropout_)

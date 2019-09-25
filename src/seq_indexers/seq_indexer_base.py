@@ -9,9 +9,10 @@ class SeqIndexerBase():
     to the list of lists of integer indices and back. Items could be either words, tags or characters.
     """
     def __init__(self, gpu=-1, check_for_lowercase=True, zero_digits=False, pad='<pad>', unk='<unk>',
-                 load_embeddings=False, embeddings_dim=0, verbose=False, isElmo = False, elmo_options_file = '', elmo_weights_file = ''):
+                 load_embeddings=False, embeddings_dim=0, verbose=False, isElmo = False, isBert = False, elmo_options_file = '', elmo_weights_file = ''):
         self.gpu = gpu
-        self.no_context_base = True
+        self.elmo = False
+        self.bert = False
         self.check_for_lowercase = check_for_lowercase
         self.zero_digits = zero_digits
         self.pad = pad
@@ -22,7 +23,7 @@ class SeqIndexerBase():
         self.out_of_vocabulary_list = list()
         self.item2idx_dict = dict()
         self.idx2item_dict = dict()
-        if (isElmo == False):
+        if (isElmo == False and isBert == False):
             if load_embeddings:
                 self.embeddings_loaded = False
                 self.embedding_vectors_list = list()

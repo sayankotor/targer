@@ -7,7 +7,7 @@ from src.layers.layer_bivanilla import LayerBiVanilla
 from src.layers.layer_bilstm import LayerBiLSTM
 from src.layers.layer_bigru import LayerBiGRU
 from src.layers.layer_context_word_embeddings import LayerContextWordEmbeddings
-
+from src.layers.layer_context_word_embeddings_bert import LayerContextWordEmbeddingsBert
 
 class TaggerBiRNN(TaggerBase):
     """TaggerBiRNN is a Vanilla recurrent network model for sequences tagging."""
@@ -21,8 +21,10 @@ class TaggerBiRNN(TaggerBase):
         self.dropout_ratio = dropout_ratio
         self.rnn_type = rnn_type
         self.gpu = gpu
-        if (word_seq_indexer.no_context_base):
+        if ((not word_seq_indexer.bert) and (not word_seq_indexer.elmo)):
             self.word_embeddings_layer = LayerWordEmbeddings(word_seq_indexer, gpu, freeze_word_embeddings)
+        elif (word_seq_indexer.bert):
+            self.word_embeddings_layer = LayerContextWordEmbeddingsBert(word_seq_indexer, gpu, freeze_word_embeddings)
         else:
             self.word_embeddings_layer = LayerContextWordEmbeddings(word_seq_indexer, gpu, freeze_word_embeddings)
         self.dropout = torch.nn.Dropout(p=dropout_ratio)
