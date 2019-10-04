@@ -14,6 +14,7 @@ from src.factories.factory_tagger import TaggerFactory
 from src.seq_indexers.seq_indexer_tag import SeqIndexerTag
 from src.seq_indexers.seq_indexer_word import SeqIndexerWord
 from src.seq_indexers.seq_indexer_elmo import SeqIndexerElmo
+from src.seq_indexers.seq_indexer_bert import SeqIndexerBert
 
 
 if __name__ == "__main__":
@@ -70,6 +71,9 @@ if __name__ == "__main__":
     parser.add_argument('--elmo', type=str2bool, default = False, help = 'is used elmo for word embedding')
     parser.add_argument('--elmo_options_fn', default = "embeddings/elmo_2x4096_512_2048cnn_2xhighway_5.5B_options.json", help = 'json with pre-trained options') 
     parser.add_argument('--elmo_weights_fn', default = "/home/vika/targer/embeddings/elmo_2x4096_512_2048cnn_2xhighway_5.5B_weights.hdf5", help = 'hdf5 with pre-trained weights') 
+    
+    parser.add_argument('--bert', type=str2bool, default = False, help = 'is used bert for word embedding')
+    parser.add_argument('--path_to_bert', type=str, default='pretrained')
     parser.add_argument('--dataset-sort', type=str2bool, default=False, help='Sort sequences by length for training.',
                         nargs='?', choices=['yes', True, 'no (default)', False])
     parser.add_argument('--seed-num', type=int, default=42, help='Random seed number, note that 42 is the answer.')
@@ -111,6 +115,12 @@ if __name__ == "__main__":
                                           options_file = args.elmo_options_fn, weights_file = args.elmo_weights_fn,
                                           num_layers_ = 2, dropout_ = 0)
         #continue
+        
+    elif args.bert:
+        print ("4")
+        word_seq_indexer = SeqIndexerBert(gpu=args.gpu, check_for_lowercase=args.check_for_lowercase, path_to_pretrained = args.path_to_bert)
+        
+        
     else:
         print ("3")
         word_seq_indexer = SeqIndexerWord(gpu=args.gpu, check_for_lowercase=args.check_for_lowercase,
@@ -125,9 +135,6 @@ if __name__ == "__main__":
     tag_seq_indexer = SeqIndexerTag(gpu=args.gpu)
     tag_seq_indexer.load_items_from_tag_sequences(tag_sequences_train)
 
-    print ("word_sequences_train", len(word_sequences_train))
-    print (word_sequences_train[:10])
-    
     # Create or load pre-trained tagger
     if args.load is None:
         tagger = TaggerFactory.create(args, word_seq_indexer, tag_seq_indexer, tag_sequences_train)
@@ -173,7 +180,7 @@ if __name__ == "__main__":
         # Evaluate tagger
         train_score, dev_score, test_score, test_msg = evaluator.get_evaluation_score_train_dev_test(tagger,
                                                                                                      datasets_bank,
-                                                                                                     batch_size=100)
+                                                                                                     batch_size=args.batch_size)
         print('\n== eval epoch %d/%d "%s" train / dev / test | %1.2f / %1.2f / %1.2f.' % (epoch, args.epoch_num,
                                                                                         args.evaluator, train_score,
                                                                                         dev_score, test_score))

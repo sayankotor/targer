@@ -34,16 +34,24 @@ class EvaluatorF1MacroTokenLevel(EvaluatorBase):
             dict[tag] /= d
         return dict
 
-    def __get_M_F1_msg(self, F1):
+    def __get_M_F1_msg(self, F1, precision, recall):
         msg = '\nF1 scores\n'
         msg += '-' * 24 + '\n'
         sum_M_F1 = 0
+        sum_precision = 0
+        sum_recall = 0
         for tag in self.tag_list:
             sum_M_F1 += F1[tag]
-            msg += '%15s = %1.2f\n' % (tag, F1[tag])
+            sum_precision += precision[tag]
+            sum_recall += recall[tag]
+            msg += '%15s = f1 = %1.2f, precision = %1.2f, recall = %1.2f\n' % (tag, F1[tag], precision[tag], recall[tag])
         M_F1 = sum_M_F1 / len(F1)
+        M_PR = sum_precision / len(F1)
+        M_RE = sum_recall / len(F1)
         msg += '-'*24 + '\n'
         msg += 'Macro-F1 = %1.3f' % M_F1
+        msg += 'Macro-Prescion = %1.3f' % M_PR
+        msg += 'Macro-Recall = %1.3f' % M_RE
         return M_F1, msg
 
     def __add_to_dict(self, dict_in, tag, val):
@@ -62,6 +70,8 @@ class EvaluatorF1MacroTokenLevel(EvaluatorBase):
         FP = self.__get_zeros_tag_dict()
         FN = self.__get_zeros_tag_dict()
         F1 = self.__get_zeros_tag_dict()
+        precision = self.__get_zeros_tag_dict()
+        recall = self.__get_zeros_tag_dict()
         for targets_seq, outputs_tag_seq in zip(targets_tag_sequences, outputs_tag_sequences):
             for t, o in zip(targets_seq, outputs_tag_seq):
                 if t == o:
@@ -72,8 +82,10 @@ class EvaluatorF1MacroTokenLevel(EvaluatorBase):
         # Calculate F1 for each tag
         for tag in self.tag_list:
             F1[tag] = (2 * TP[tag] / max(2 * TP[tag] + FP[tag] + FN[tag], 1)) * 100
+            precision[tag] = (TP[tag] / max(TP[tag] + FP[tag], 1))*100
+            recall[tag] = (TP[tag] / max(TP[tag] + FN[tag], 1))*100
         # Calculate Macro-F1 score and prepare the message
-        M_F1, msg = self.__get_M_F1_msg(F1)
+        M_F1, msg = self.__get_M_F1_msg(F1,precision, recall)
         print(msg)
         #self.validate_M_F1_scikitlearn( targets_tag_sequences, outputs_tag_sequences)
         return M_F1, msg
