@@ -16,6 +16,11 @@ from src.seq_indexers.seq_indexer_word import SeqIndexerWord
 from src.seq_indexers.seq_indexer_elmo import SeqIndexerElmo
 from src.seq_indexers.seq_indexer_bert import SeqIndexerBert
 
+#LC_ALL=en_US.UTF-8
+#LANG=en_US.UTF-8
+utf8stdout = open(1, 'w', encoding='utf-8', closefd=False)
+
+CUDA_LAUNCH_BLOCKING = 1
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Learning tagger using neural networks')
@@ -87,6 +92,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     np.random.seed(args.seed_num)
     torch.manual_seed(args.seed_num)
+    utf8stdout = open(1, 'w', encoding='utf-8', closefd=False)
     if args.gpu >= 0:
         torch.cuda.set_device(args.gpu)
         torch.cuda.manual_seed(args.seed_num)
@@ -94,6 +100,8 @@ if __name__ == "__main__":
     data_io = DataIOFactory.create(args)
     word_sequences_train, tag_sequences_train, word_sequences_dev, tag_sequences_dev, word_sequences_test, tag_sequences_test = data_io.read_train_dev_test(args)
 
+    print ("word_sequences_train", word_sequences_train[1], file = utf8stdout)
+    print ("tag_sequences_train", tag_sequences_train[1],file = utf8stdout)
 
     # DatasetsBank provides storing the different dataset subsets (train/dev/test) and sampling batches
     datasets_bank = DatasetsBankFactory.create(args)
@@ -162,21 +170,23 @@ if __name__ == "__main__":
             tagger.train()
             if args.lr_decay > 0:
                 scheduler.step()
+            
             for i, (word_sequences_train_batch, tag_sequences_train_batch) in \
                     enumerate(datasets_bank.get_train_batches(args.batch_size)):
-                tagger.train()
-                tagger.zero_grad()
-                loss = tagger.get_loss(word_sequences_train_batch, tag_sequences_train_batch)
-                loss.backward()
-                nn.utils.clip_grad_norm_(tagger.parameters(), args.clip_grad)
-                optimizer.step()
-                loss_sum += loss.item()
-                if i % 1 == 0:
-                    print('\r-- train epoch %d/%d, batch %d/%d (%1.2f%%), loss = %1.2f.' % (epoch, args.epoch_num,
-                                                                                         i + 1, iterations_num,
-                                                                                         ceil(i*100.0/iterations_num),
-                                                                                         loss_sum*100 / iterations_num),
-                                                                                         end='', flush=True)
+                    tagger.train()
+                    tagger.zero_grad()
+                    loss = tagger.get_loss(word_sequences_train_batch, tag_sequences_train_batch)
+                    loss.backward()
+                    nn.utils.clip_grad_norm_(tagger.parameters(), args.clip_grad)
+                    optimizer.step()
+                    loss_sum += loss.item()
+                    if i % 1 == 0:
+                        print('\r-- train epoch %d/%d, batch %d/%d (%1.2f%%), loss = %1.2f.' % (epoch, args.epoch_num,
+                                                                                             i + 1, iterations_num,
+                                                                                             ceil(i*100.0/iterations_num),
+                                                                                             loss_sum*100 / iterations_num),
+                                                                                             end='', flush=True)
+            
         # Evaluate tagger
         train_score, dev_score, test_score, test_msg = evaluator.get_evaluation_score_train_dev_test(tagger,
                                                                                                      datasets_bank,

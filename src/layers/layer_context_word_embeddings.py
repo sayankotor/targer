@@ -23,7 +23,7 @@ class LayerContextWordEmbeddings(LayerBase):
     
     def to_gpu(self, tensor):
         if self.gpu > -1:
-            return tensor.cuda(device=1)
+            return tensor.cuda(device=self.gpu)
         else:
             return tensor.cpu()
 

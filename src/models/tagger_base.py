@@ -3,6 +3,8 @@ import math
 import torch
 import torch.nn as nn
 
+utf8stdout = open(1, 'w', encoding='utf-8', closefd=False)
+
 
 class TaggerBase(nn.Module):
     """TaggerBase is an abstract class for tagger models. It implements the tagging functionality for
@@ -15,7 +17,8 @@ class TaggerBase(nn.Module):
         self.tag_seq_indexer = tag_seq_indexer
         self.gpu = gpu
         self.batch_size = batch_size
-        self.elmo = False
+        self.elmo = word_seq_indexer.elmo
+        self.bert = word_seq_indexer.bert
 
     def tensor_ensure_gpu(self, tensor):
         if self.gpu >= -1:
@@ -37,9 +40,17 @@ class TaggerBase(nn.Module):
     def forward(self, *input):
         pass
 
+    
     def predict_idx_from_words(self, word_sequences):
         self.eval()
+        #print ("predict idx from word")
+        
         outputs_tensor = self.forward(word_sequences) # batch_size x num_class+1 x max_seq_len
+        #if (self.bert): #token embeddings instead of word embeddings
+            #print ("predict idx from word is bert")
+            #tokens_tensor, segments_tensor, number_word_in_seq = self.word_seq_indexer.batch_to_ids(word_sequences)
+            #word_sequences = tokens_tensor
+            
         output_idx_sequences = list()
         for k in range(len(word_sequences)):
             idx_seq = list()
@@ -72,6 +83,11 @@ class TaggerBase(nn.Module):
         return output_tag_sequences
 
     def get_mask_from_word_sequences(self, word_sequences):
+        #if (self.bert): #token embeddings instead of word embeddings
+            #print ("predict idx from word is bert")
+            #tokens_tensor, segments_tensor, number_word_in_seq = self.word_seq_indexer.batch_to_ids(word_sequences)
+            #word_sequences = tokens_tensor
+        
         batch_num = len(word_sequences)
         max_seq_len = max([len(word_seq) for word_seq in word_sequences])
         mask_tensor = self.tensor_ensure_gpu(torch.zeros(batch_num, max_seq_len, dtype=torch.float))

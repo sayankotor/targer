@@ -1,6 +1,6 @@
 """abstract base class for all type of layers"""
 import torch.nn as nn
-
+import torch
 class LayerBase(nn.Module):
     """Abstract base class for all type of layers."""
     def __init__(self, gpu):
