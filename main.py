@@ -19,6 +19,7 @@ from src.seq_indexers.seq_indexer_bert import SeqIndexerBert
 #LC_ALL=en_US.UTF-8
 #LANG=en_US.UTF-8
 utf8stdout = open(1, 'w', encoding='utf-8', closefd=False)
+import sys
 
 CUDA_LAUNCH_BLOCKING = 1
 
@@ -30,16 +31,22 @@ if __name__ == "__main__":
                         help='Development data in format defined by --data-io param.')
     parser.add_argument('--test', default='data/NER/CoNNL_2003_shared_task/test.txt',
                         help='Test data in format defined by --data-io param.')
+    parser.add_argument('--splitter', default = '\t')
+    
     parser.add_argument('-d', '--data-io', choices=['connl-ner-2003', 'connl-pe', 'connl-wd'],
                         default='connl-ner-2003', help='Data read/write file format.')
+    
     parser.add_argument('--gpu', type=int, default=0, help='GPU device number, -1  means CPU.')
     parser.add_argument('--model', help='Tagger model.', choices=['BiRNN', 'BiRNNCNN', 'BiRNNCRF', 'BiRNNCNNCRF'],
                         default='BiRNNCNNCRF')
     parser.add_argument('--load', '-l', default=None, help='Path to load from the trained model.')
     parser.add_argument('--save', '-s', default='%s_tagger.hdf5' % get_datetime_str(),
                         help='Path to save the trained model.')
+    parser.add_argument('--logname', type=str, default=None, help='name of file where std output would be redirected')
+    
     parser.add_argument('--word-seq-indexer', '-w', type=str, default=None,
                         help='Load word_seq_indexer object from hdf5 file.')
+    
     parser.add_argument('--epoch-num', '-e',  type=int, default=100, help='Number of epochs.')
     parser.add_argument('--min-epoch-num', '-n', type=int, default=50, help='Minimum number of epochs.')
     parser.add_argument('--patience', '-p', type=int, default=15, help='Patience for early stopping.')
@@ -79,6 +86,8 @@ if __name__ == "__main__":
     
     parser.add_argument('--bert', type=str2bool, default = False, help = 'is used bert for word embedding')
     parser.add_argument('--path_to_bert', type=str, default='pretrained')
+    parser.add_argument('--bert_frozen', type=str2bool, default = True, help = 'must BERT model be trained togehter with you model?')
+    
     parser.add_argument('--dataset-sort', type=str2bool, default=False, help='Sort sequences by length for training.',
                         nargs='?', choices=['yes', True, 'no (default)', False])
     parser.add_argument('--seed-num', type=int, default=42, help='Random seed number, note that 42 is the answer.')
@@ -92,16 +101,18 @@ if __name__ == "__main__":
     args = parser.parse_args()
     np.random.seed(args.seed_num)
     torch.manual_seed(args.seed_num)
+    
     utf8stdout = open(1, 'w', encoding='utf-8', closefd=False)
+    if (args.logname != None):
+        sys.stdout = open(args.logname, 'w')
+
+    
     if args.gpu >= 0:
         torch.cuda.set_device(args.gpu)
         torch.cuda.manual_seed(args.seed_num)
     # Load text data as lists of lists of words (sequences) and corresponding list of lists of tags
     data_io = DataIOFactory.create(args)
     word_sequences_train, tag_sequences_train, word_sequences_dev, tag_sequences_dev, word_sequences_test, tag_sequences_test = data_io.read_train_dev_test(args)
-
-    print ("word_sequences_train", word_sequences_train[1], file = utf8stdout)
-    print ("tag_sequences_train", tag_sequences_train[1],file = utf8stdout)
 
     # DatasetsBank provides storing the different dataset subsets (train/dev/test) and sampling batches
     datasets_bank = DatasetsBankFactory.create(args)
@@ -110,27 +121,19 @@ if __name__ == "__main__":
     datasets_bank.add_test_sequences(word_sequences_test, tag_sequences_test)
     # Word_seq_indexer converts lists of lists of words to lists of lists of integer indices and back
 
-    print ("qu", args.elmo)
-
     if args.word_seq_indexer is not None and isfile(args.word_seq_indexer) and args.elmo == False:
-        print ("1")
         word_seq_indexer = torch.load(args.word_seq_indexer)
     elif args.elmo:
-        print (args.elmo)
-        print (args.elmo == False)
-        print ("2")
         word_seq_indexer = SeqIndexerElmo(gpu=args.gpu, check_for_lowercase=args.check_for_lowercase,
                                           options_file = args.elmo_options_fn, weights_file = args.elmo_weights_fn,
                                           num_layers_ = 2, dropout_ = 0)
         #continue
         
     elif args.bert:
-        print ("4")
-        word_seq_indexer = SeqIndexerBert(gpu=args.gpu, check_for_lowercase=args.check_for_lowercase, path_to_pretrained = args.path_to_bert)
+        word_seq_indexer = SeqIndexerBert(gpu=args.gpu, check_for_lowercase=args.check_for_lowercase, path_to_pretrained = args.path_to_bert, model_frozen = args.bert_frozen)
         
         
     else:
-        print ("3")
         word_seq_indexer = SeqIndexerWord(gpu=args.gpu, check_for_lowercase=args.check_for_lowercase,
                                           embeddings_dim=args.emb_dim, verbose=True)
         word_seq_indexer.load_items_from_embeddings_file_and_unique_words_list(emb_fn=args.emb_fn,
@@ -163,16 +166,19 @@ if __name__ == "__main__":
     best_test_msg = 'N\A'
     patience_counter = 0
     print('\nStart training...\n')
-    for epoch in range(0, args.epoch_num + 1):
+    print ("epoch num", args.epoch_num)
+    for epoch in range(0, args.epoch_num):
+        print ("epoch ", epoch)
         time_start = time.time()
         loss_sum = 0
-        if epoch > 0:
+        if epoch > -1:
             tagger.train()
             if args.lr_decay > 0:
                 scheduler.step()
             
             for i, (word_sequences_train_batch, tag_sequences_train_batch) in \
                     enumerate(datasets_bank.get_train_batches(args.batch_size)):
+                    sys.stdout.flush()
                     tagger.train()
                     tagger.zero_grad()
                     loss = tagger.get_loss(word_sequences_train_batch, tag_sequences_train_batch)
@@ -180,7 +186,7 @@ if __name__ == "__main__":
                     nn.utils.clip_grad_norm_(tagger.parameters(), args.clip_grad)
                     optimizer.step()
                     loss_sum += loss.item()
-                    if i % 1 == 0:
+                    if i % 100 == 0:
                         print('\r-- train epoch %d/%d, batch %d/%d (%1.2f%%), loss = %1.2f.' % (epoch, args.epoch_num,
                                                                                              i + 1, iterations_num,
                                                                                              ceil(i*100.0/iterations_num),
@@ -208,13 +214,13 @@ if __name__ == "__main__":
                 tagger.save_tagger(args.save)
             print('## [BEST epoch], %d seconds.\n' % (time.time() - time_start))
         else:
-            patience_counter += 1
+            #patience_counter += 1
             print('## [no improvement micro-f1 on DEV during the last %d epochs (best_f1_dev=%1.2f), %d seconds].\n' %
                                                                                             (patience_counter,
                                                                                              best_dev_score,
                                                                                              (time.time()-time_start)))
-        if patience_counter > args.patience and epoch > args.min_epoch_num:
-            break
+        #if patience_counter > args.patience and epoch > args.min_epoch_num:
+            #break
     # Save final trained tagger to disk, if it is not already saved according to "save best"
     if args.save is not None and not args.save_best:
         tagger.save_tagger(args.save)

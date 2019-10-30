@@ -65,6 +65,12 @@ class EvaluatorF1MacroTokenLevel(EvaluatorBase):
     def get_evaluation_score(self, targets_tag_sequences, outputs_tag_sequences, word_sequences=None):
         # Create list of tags
         self.__init_tag_list(targets_tag_sequences)
+        i = 0
+        for elem in zip(targets_tag_sequences, outputs_tag_sequences):
+            if (i < 4):
+                i = i +1
+                print (elem[0])
+                print (elem[1])
         # Init values
         TP = self.__get_zeros_tag_dict()
         FP = self.__get_zeros_tag_dict()

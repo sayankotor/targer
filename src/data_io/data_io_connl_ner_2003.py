@@ -11,13 +11,13 @@ class DataIOConnlNer2003():
     """
     def read_train_dev_test(self, args):
         print ("args train =", args.train)
-        word_sequences_train, tag_sequences_train = self.read_data(fn=args.train, verbose=args.verbose)
-        word_sequences_dev, tag_sequences_dev = self.read_data(fn=args.dev, verbose=args.verbose)
-        word_sequences_test, tag_sequences_test = self.read_data(fn=args.test, verbose=args.verbose)
+        word_sequences_train, tag_sequences_train = self.read_data(fn=args.train, verbose=args.verbose, splitter = args.splitter)
+        word_sequences_dev, tag_sequences_dev = self.read_data(fn=args.dev, verbose=args.verbose, splitter = args.splitter)
+        word_sequences_test, tag_sequences_test = self.read_data(fn=args.test, verbose=args.verbose, splitter = args.splitter)
         return word_sequences_train, tag_sequences_train, word_sequences_dev, tag_sequences_dev, word_sequences_test, \
                tag_sequences_test
 
-    def read_data(self, fn, verbose=True, column_no=-1, splitter = ','):
+    def read_data(self, fn, verbose=True, column_no=-1, splitter = '\t'):
         word_sequences = list()
         tag_sequences = list()
         with codecs.open(fn, 'r', 'utf-8') as f:
@@ -25,17 +25,18 @@ class DataIOConnlNer2003():
         curr_words = list()
         curr_tags = list()
         for k in range(len(lines)):
-            #print (lines[k])
+            #print ("read data")
             line = lines[k].strip()
-            if len(line) == 1 or line.startswith('-DOCSTART-'): # new sentence or new document
+            #print (lines[k], len(line))
+            if len(line) == 1 or len(line) == 0 or line.startswith('-DOCSTART-'): # new sentence or new document
                 if len(curr_words) > 0:
                     word_sequences.append(curr_words)
                     tag_sequences.append(curr_tags)
                     curr_words = list()
                     curr_tags = list()
                 continue
-            strings = line.split(',')
-            #print (strings)
+            strings = line.split(splitter)
+            
             word = strings[0]
             #print ("word", word)
             tag = strings[column_no] # be default, we take the last tag

@@ -11,8 +11,8 @@ class SeqIndexerElmo(SeqIndexerBaseEmbeddings):
         SeqIndexerBaseEmbeddings.__init__(self, gpu=gpu, check_for_lowercase=check_for_lowercase, zero_digits=True,
                                           pad='<pad>', unk='<unk>', load_embeddings=True, embeddings_dim=embeddings_dim,
                                           verbose=verbose, isElmo = True)
-        print ("create seq indexer elmo!")
-        #self.no_context_base = False
+        print ("create seq indexer elmo")
+        self.no_context_base = True
         self.elmo = True
         self.options_fn = options_file
         self.weights_fn = weights_file

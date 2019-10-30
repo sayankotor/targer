@@ -1,5 +1,6 @@
 """converts list of lists of string tags to list of lists of integer indices and back"""
 from src.seq_indexers.seq_indexer_base import SeqIndexerBase
+utf8stdout = open(1, 'w', encoding='utf-8', closefd=False)
 
 
 class SeqIndexerTag(SeqIndexerBase):
@@ -20,4 +21,4 @@ class SeqIndexerTag(SeqIndexerBase):
         if self.verbose:
             print('\nload_vocabulary_from_tag_sequences:')
             print(' -- class_num = %d' % self.get_class_num())
-            print(' --', self.item2idx_dict)
+            print(' --', self.item2idx_dict, file = utf8stdout)
