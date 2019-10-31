@@ -33,8 +33,7 @@ class SeqIndexerBert(SeqIndexerBaseEmbeddings):
         for elem in [self.emb.embeddings.word_embeddings, self.emb.embeddings.position_embeddings, self.emb.embeddings.token_type_embeddings, self.emb.embeddings.LayerNorm]:
             for param in elem.parameters():
                 param.requires_grad = False
-                
-        self.frozen = False       
+                       
         ## froze - unfroze layer of loaded bert pre-trained model. Now only pooler leayer is unfrozen. You can unfroze layers from encoders, decoders, etc.
         if (not self.frozen):
             #print ("loaded BERT model will be trained")
