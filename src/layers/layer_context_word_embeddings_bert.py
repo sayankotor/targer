@@ -50,7 +50,6 @@ class LayerContextWordEmbeddingsBert(LayerBase):
         
         #print ("forward: token_tensor shape", tokens_tensor.shape)
         #print ("forward: number_word_in_seq shape", number_word_in_seq.shape)
-        self.embeddings.eval()
         encoded_layers, _ = self.embeddings(self.token_tensor, self.segment_tensor)
         
         batch_embeddings = []
@@ -66,24 +65,21 @@ class LayerContextWordEmbeddingsBert(LayerBase):
             summed_last_4_layers = torch.stack(summed_last_4_layers)
             batch_embeddings.append(summed_last_4_layers)
         
-        answer = torch.stack(batch_embeddings)
-        self.enc_l = encoded_layers
-        self.answer = answer
+        answer = torch.stack(batch_embeddings)        
         
-        
-        #create pooling
-        #print ("forward: create pooling")
         max_seq_len = max([len(word_seq) for word_seq in word_sequences])
-        #print ("forward: create pooling", max_seq_len)
-        self_tensor = torch.zeros((answer.shape[0], max_seq_len + 2, answer.shape[2])) # batch_size*max_num_word (word! not token!)*len_embedding
+        self_tensor = torch.zeros((answer.shape[0], max_seq_len + 4, answer.shape[2])) # batch_size*max_num_word (word! not token!)*len_embedding
+        # why + 4?
+        # 2 - [cls] and [sep] - bert wrapper, 2 - extra padding for scatter_add function
         self_tensor = self.to_gpu(self_tensor)
         index =  self.to_gpu(number_word_in_seq)
         index = index.unsqueeze(2)
         index = index.repeat(1, 1, answer.shape[2])
+        #torch.save([index], 'index.pth')
+        #torch.save([answer], 'answer.pth')
+        #torch.save([self_tensor], 'self_tensor.pth')
         self_tensor1 = self_tensor.scatter_add_(1, index, answer)
-        
-        self_tensor1 = self_tensor1[:, :max_seq_len]
+        #torch.save([self_tensor1], 'self_tensor1.pth')
+        self_tensor1 = self_tensor1[:, 1:max_seq_len]
         self_tensor1 = F.pad(self_tensor1, (0, 0, 0, max_seq_len - self_tensor1.shape[1], 0, 0), "constant", 0)
-       
-        self.index = index
         return self_tensor1
