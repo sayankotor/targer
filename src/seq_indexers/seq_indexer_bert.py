@@ -15,7 +15,7 @@ utf8stdout = open(1, 'w', encoding='utf-8', closefd=False)
 
 class SeqIndexerBert(SeqIndexerBaseEmbeddings):
     """SeqIndexerWord converts list of lists of words as strings to list of lists of integer indices and back."""
-    def __init__(self, gpu=-1, check_for_lowercase=True, embeddings_dim=0, verbose=True, path_to_pretrained = "/home/vika/targer/pretrained", bert_type = 'bert-base-uncased', model_frozen = True):
+    def __init__(self, gpu=-1, check_for_lowercase=True, embeddings_dim=0, verbose=True, path_to_pretrained = "/home/vika/targer/pretrained/uncased_L-12_H-768_A-12/", bert_type = 'bert-base-uncased', model_frozen = True):
         SeqIndexerBaseEmbeddings.__init__(self, gpu=gpu, check_for_lowercase=check_for_lowercase, zero_digits=True,
                                           pad='<pad>', unk='<unk>', load_embeddings=True, embeddings_dim=embeddings_dim,
                                           verbose=verbose, isBert = True)
@@ -24,7 +24,8 @@ class SeqIndexerBert(SeqIndexerBaseEmbeddings):
         
         self.bert = True
         self.path_to_pretrained = path_to_pretrained
-        self.tokenizer = tokenizer_custom_bert.FullTokenizer('bert-base-uncased-vocab.txt')
+        self.tokenizer = tokenizer_custom_bert.FullTokenizer(path_to_pretrained + 'vocab.txt')
+        #self.tokenizer = tokenizer_custom_bert.BertTokenizer.from_pretrained("https://s3.amazonaws.com/models.huggingface.co/bert/bert-base-uncased-vocab.txt")
         self.emb = BertModel.from_pretrained(path_to_pretrained)
         self.frozen = model_frozen
         for param in self.emb.parameters():
@@ -33,10 +34,10 @@ class SeqIndexerBert(SeqIndexerBaseEmbeddings):
             for param in elem.parameters():
                 param.requires_grad = False
                 
-                
+        self.frozen = False       
         ## froze - unfroze layer of loaded bert pre-trained model. Now only pooler leayer is unfrozen. You can unfroze layers from encoders, decoders, etc.
         if (not self.frozen):
-            print ("loaded BERT model will be trained")
+            #print ("loaded BERT model will be trained")
             #for i in [0]:
                 #for param in self.emb.encoder.layer[i].parameters():
                     #param.requires_grad = True
