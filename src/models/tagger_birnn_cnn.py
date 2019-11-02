@@ -3,12 +3,13 @@ import torch
 import torch.nn as nn
 from src.models.tagger_base import TaggerBase
 from src.layers.layer_word_embeddings import LayerWordEmbeddings
-from src.layers.layer_context_word_embeddings import LayerContextWordEmbeddings
 from src.layers.layer_bivanilla import LayerBiVanilla
 from src.layers.layer_bilstm import LayerBiLSTM
 from src.layers.layer_bigru import LayerBiGRU
 from src.layers.layer_char_embeddings import LayerCharEmbeddings
 from src.layers.layer_char_cnn import LayerCharCNN
+from src.layers.layer_context_word_embeddings import LayerContextWordEmbeddings
+from src.layers.layer_context_word_embeddings_bert import LayerContextWordEmbeddingsBert
 
 
 class TaggerBiRNNCNN(TaggerBase):

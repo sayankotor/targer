@@ -10,6 +10,8 @@ from src.layers.layer_bigru import LayerBiGRU
 from src.layers.layer_char_embeddings import LayerCharEmbeddings
 from src.layers.layer_char_cnn import LayerCharCNN
 from src.layers.layer_crf import LayerCRF
+from src.layers.layer_context_word_embeddings import LayerContextWordEmbeddings
+from src.layers.layer_context_word_embeddings_bert import LayerContextWordEmbeddingsBert
 
 
 class TaggerBiRNNCNNCRF(TaggerBase):
