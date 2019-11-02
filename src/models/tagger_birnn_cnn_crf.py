@@ -10,9 +10,6 @@ from src.layers.layer_bigru import LayerBiGRU
 from src.layers.layer_char_embeddings import LayerCharEmbeddings
 from src.layers.layer_char_cnn import LayerCharCNN
 from src.layers.layer_crf import LayerCRF
-from src.layers.layer_context_word_embeddings import LayerContextWordEmbeddings
-from src.layers.layer_context_word_embeddings_bert import LayerContextWordEmbeddingsBert
-
 
 class TaggerBiRNNCNNCRF(TaggerBase):
     """TaggerBiRNNCNNCRF is a model for sequences tagging that includes recurrent network + conv layer + CRF."""
@@ -34,7 +31,7 @@ class TaggerBiRNNCNNCRF(TaggerBase):
         self.word_len = word_len
         self.char_cnn_filter_num = char_cnn_filter_num
         self.char_window_size = char_window_size
-        self.word_embeddings_layer = LayerContextWordEmbeddings(word_seq_indexer, gpu, freeze_word_embeddings)
+        self.word_embeddings_layer = LayerWordEmbeddings(word_seq_indexer, gpu, freeze_word_embeddings)
         self.char_embeddings_layer = LayerCharEmbeddings(gpu, char_embeddings_dim, freeze_char_embeddings,
                                                          word_len, word_seq_indexer.get_unique_characters_list())
         self.char_cnn_layer = LayerCharCNN(gpu, char_embeddings_dim, char_cnn_filter_num, char_window_size,
