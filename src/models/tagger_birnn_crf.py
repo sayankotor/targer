@@ -9,6 +9,7 @@ from src.layers.layer_bilstm import LayerBiLSTM
 from src.layers.layer_bigru import LayerBiGRU
 from src.layers.layer_crf import LayerCRF
 from src.layers.layer_context_word_embeddings import LayerContextWordEmbeddings
+from src.layers.layer_context_word_embeddings_bert import LayerContextWordEmbeddingsBert
 
 
 class TaggerBiRNNCRF(TaggerBase):
@@ -23,8 +24,10 @@ class TaggerBiRNNCRF(TaggerBase):
         self.dropout_ratio = dropout_ratio
         self.rnn_type = rnn_type
         self.gpu = gpu
-        if (word_seq_indexer.no_context_base):
+        if ((not word_seq_indexer.bert) and (not word_seq_indexer.elmo)):
             self.word_embeddings_layer = LayerWordEmbeddings(word_seq_indexer, gpu, freeze_word_embeddings)
+        elif (word_seq_indexer.bert):
+            self.word_embeddings_layer = LayerContextWordEmbeddingsBert(word_seq_indexer, gpu, freeze_word_embeddings)
         else:
             self.word_embeddings_layer = LayerContextWordEmbeddings(word_seq_indexer, gpu, freeze_word_embeddings)
         self.dropout = torch.nn.Dropout(p=dropout_ratio)
@@ -90,8 +93,8 @@ class TaggerBiRNNCRF(TaggerBase):
             curr_output_idx = self.predict_idx_from_words(word_sequences[i:j])
             curr_output_tag_sequences = self.tag_seq_indexer.idx2items(curr_output_idx)
             output_tag_sequences.extend(curr_output_tag_sequences)
-            print('\r++ predicting, batch %d/%d (%1.2f%%).' % (n + 1, batch_num, math.ceil(n * 100.0 / batch_num)),
-                  end='', flush=True)
+            #print('\r++ predicting, batch %d/%d (%1.2f%%).' % (n + 1, batch_num, math.ceil(n * 100.0 / batch_num)),
+                  #end='', flush=True)
         return output_tag_sequences
 
     '''
