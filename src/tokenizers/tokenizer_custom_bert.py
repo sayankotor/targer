@@ -244,7 +244,7 @@ class FullTokenizer(object):
     self.basic_tokenizer = BasicTokenizer(do_lower_case=do_lower_case)
     self.wordpiece_tokenizer = WordpieceTokenizer(vocab=self.vocab)
 
-    def tokenize(self, text):
+  def tokenize(self, text):
         split_tokens = []
         for token in self.basic_tokenizer.tokenize(text):
             for sub_token in self.wordpiece_tokenizer.tokenize(token):
@@ -252,10 +252,10 @@ class FullTokenizer(object):
 
         return split_tokens
 
-    def convert_tokens_to_ids(self, tokens):
+  def convert_tokens_to_ids(self, tokens):
         return convert_by_vocab(self.vocab, tokens)
 
-    def convert_ids_to_tokens(self, ids):
+  def convert_ids_to_tokens(self, ids):
         return convert_by_vocab(self.inv_vocab, ids)
 
 
