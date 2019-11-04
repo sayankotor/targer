@@ -14,7 +14,7 @@ class LayerContextWordEmbeddings(LayerBase):
         self.embeddings = word_seq_indexer.emb
         self.embeddings.padding_idx = pad_idx
         self.word_seq_indexer = word_seq_indexer
-        self.embeddings_dim = self.embeddings.get_output_dim()
+        self.embeddings_dim = word_seq_indexer.embeddings_dim()
         self.output_dim = self.embeddings_dim
         self.gpu = gpu
 
