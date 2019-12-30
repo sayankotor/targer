@@ -15,10 +15,11 @@ class TaggerFactory():
             raise ValueError('Can''t find tagger in file "%s". Please, run the main script with non-empty \
                              "--save-best-path" param to create it.' % checkpoint_fn)
         tagger = torch.load(checkpoint_fn)
-        tagger.gpu = gpu
+        if (gpu > -1):
+            tagger.gpu = gpu
 
-        tagger.word_seq_indexer.gpu = gpu # hotfix
-        tagger.tag_seq_indexer.gpu = gpu # hotfix
+            tagger.word_seq_indexer.gpu = gpu # hotfix
+            tagger.tag_seq_indexer.gpu = gpu # hotfix
         if hasattr(tagger, 'char_embeddings_layer'):# very hot hotfix
             tagger.char_embeddings_layer.char_seq_indexer.gpu = gpu # hotfix
         tagger.self_ensure_gpu()
