@@ -57,7 +57,8 @@ if __name__ == "__main__":
     parser.add_argument('--dropout-ratio', '-r', type=float, default=0.5, help='Dropout ratio.')
     parser.add_argument('--batch-size', '-b', type=int, default=10, help='Batch size, samples.')
     parser.add_argument('--opt', '-o', help='Optimization method.', choices=['sgd', 'adam'], default='sgd')
-    parser.add_argument('--lr', type=float, default=0.01, help='Learning rate.')
+    parser.add_argument('--lr', type=float, default=0.005, help='Learning rate.')
+    parser.add_argument('--lr_bert', type=float, default=0.000002, help='Learning rate.')
     parser.add_argument('--lr-decay', type=float, default=0.05, help='Learning decay rate.')
     parser.add_argument('--momentum', '-m', type=float, default=0.9, help='Learning momentum rate.')
     parser.add_argument('--clip-grad', type=float, default=5, help='Clipping gradients maximum L2 norm.')
@@ -87,6 +88,7 @@ if __name__ == "__main__":
     parser.add_argument('--bert', type=str2bool, default = False, help = 'is used bert for word embedding')
     parser.add_argument('--path_to_bert', type=str, default='pretrained')
     parser.add_argument('--bert_frozen', type=str2bool, default = True, help = 'must BERT model be trained togehter with you model?')
+    parser.add_argument('--special_bert', type=str2bool, default = True, help = 'should we unfroze all bert and train it with smaller lr ?')
     
     parser.add_argument('--dataset-sort', type=str2bool, default=False, help='Sort sequences by length for training.',
                         nargs='?', choices=['yes', True, 'no (default)', False])
@@ -151,10 +153,13 @@ if __name__ == "__main__":
         tagger = TaggerFactory.create(args, word_seq_indexer, tag_seq_indexer, tag_sequences_train)
     else:
         tagger = TaggerFactory.load(args.load, args.gpu)
+        
+    print (tagger.gpu)   
+    
     # Create evaluator
     evaluator = EvaluatorFactory.create(args)
     # Create optimizer
-    optimizer, scheduler = OptimizerFactory.create(args, tagger)
+    optimizer, scheduler = OptimizerFactory.create(args, tagger, special_bert = args.special_bert)
     # Prepare report and temporary variables for "save best" strategy
     report = Report(args.report_fn, args, score_names=('train loss', '%s-train' % args.evaluator,
                                                        '%s-dev' % args.evaluator, '%s-test' % args.evaluator))
